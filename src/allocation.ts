@@ -18,6 +18,25 @@ const shiftOutput: shiftMaker = {
   producers: 2,
 };
 
+interface barGraph {
+  text: string;
+  fontY: number;
+  color: string;
+  y: number;
+}
+
+const barShow: barGraph[] = [{
+  text: `Production: ${shiftOutput.production}`,
+  fontY: 102,
+  color: "#27766b",
+  y: 110,
+}, {
+  text: `Consumption: ${shiftOutput.consume}`,
+  fontY: 154,
+  color: "#a44d23",
+  y: 162,
+}];
+
 function update(shiftOutput: shiftMaker) {
   const balance = shiftOutput.production - shiftOutput.consume;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -31,17 +50,21 @@ function update(shiftOutput: shiftMaker) {
   ctx.fillStyle = "#233e43";
   ctx.font = "14px system-ui";
   ctx.fillText(`Producers: ${producers} / 6`, 18, 76);
-  ctx.fillText(`Production: ${shiftOutput.production}`, 18, 102);
-  ctx.fillStyle = "#27766b";
-  ctx.fillRect(18, 110, shiftOutput.production * 14, 20);
-  ctx.fillStyle = "#233e43";
-  ctx.fillText(`Consumption: ${shiftOutput.consume}`, 18, 154);
-  ctx.fillStyle = "#a44d23";
-  ctx.fillRect(18, 162, shiftOutput.consume * 14, 20);
+  for (let j = 0; j < barShow.length; j++) {
+    makeBar(barShow[j]);
+  }
+
   readout.textContent =
     `Assigned: ${producers}/6 · Production: ${shiftOutput.production} · Consumption: ${shiftOutput.consume} · Balance: ${
       balance > 0 ? "+" : ""
     }${balance}`;
+}
+
+function makeBar(barShow: barGraph) {
+  ctx.fillStyle = barShow.color;
+  ctx.fillRect(18, barShow.y, shiftOutput.consume * 14, 20);
+  ctx.fillStyle = "#233e43";
+  ctx.fillText(barShow.text, 18, barShow.fontY);
 }
 
 document.querySelector<HTMLButtonElement>("#allocation-less")!.onclick = () => {

@@ -13,6 +13,8 @@ let count = 0;
 let panel: HTMLParagraphElement | null = null;
 let panelUpdates = 0;
 
+const shieldChanger = new EventTarget();
+
 interface shield {
   health: number;
   max: number;
@@ -26,6 +28,11 @@ function shieldTracker(): shield {
     damage: 10 - count,
   };
 }
+
+shieldChanger.addEventListener("shield-changed", (event) => {
+  const shield = (event as CustomEvent<shield>).detail;
+  drawMeter(shield);
+});
 
 function drawMeter(tracker: shield) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -55,7 +62,11 @@ function setCount(next: number) {
   const bounded = Math.max(0, Math.min(10, next));
   if (bounded === count) return;
   count = bounded;
-  drawMeter(shieldTracker());
+  shieldChanger.dispatchEvent(
+    new CustomEvent("shield-changed", {
+      detail: shieldTracker(),
+    }),
+  );
   if (panel) updateStats();
 }
 

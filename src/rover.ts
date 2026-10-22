@@ -3,10 +3,16 @@ export {};
 const canvas = document.querySelector<HTMLCanvasElement>("#rover-canvas")!;
 const ctx = canvas.getContext("2d")!;
 const readout = document.querySelector<HTMLParagraphElement>("#rover-readout")!;
-const headings = ["North", "East", "South", "West"];
+const queue = document.querySelector<HTMLParagraphElement>(
+  "#rover-queue-status",
+)!;
+
+const directionHeadings = ["North", "East", "South", "West"];
 const x = { num: 2 };
 const y = { num: 2 };
 let direction = 0;
+
+let commandQueue: Command[] = [];
 
 const compass = [
   { direction: "North", offset: -1, axis: y },
@@ -42,6 +48,11 @@ class forward implements Command {
 const moveForward = new forward();
 const turnRight = new rightTurn();
 
+function clearQueue() {
+  commandQueue = [];
+  queue.textContent = "Empty";
+}
+
 function drawRover() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.strokeStyle = "#718881";
@@ -62,22 +73,38 @@ function drawRover() {
   ctx.fill();
   ctx.restore();
   readout.textContent = `Position: (${x.num}, ${y.num}) · Facing: ${
-    headings[direction]
+    directionHeadings[direction]
   }`;
 }
 
 document.querySelector<HTMLButtonElement>("#rover-forward")!.onclick = () => {
   drawRover();
-  moveForward.execute();
+  if (commandQueue.length == 0) queue.textContent = "";
+  commandQueue.push(moveForward);
+  queue.textContent += "Forward ";
 };
 document.querySelector<HTMLButtonElement>("#rover-right")!.onclick = () => {
   drawRover();
-  turnRight.execute();
+  if (commandQueue.length == 0) queue.textContent = "";
+  commandQueue.push(turnRight);
+  queue.textContent += "Right ";
+};
+
+document.querySelector<HTMLButtonElement>("#rover-run")!.onclick = () => {
+  for (const command of commandQueue) {
+    command.execute();
+  }
+  clearQueue();
+};
+
+document.querySelector<HTMLButtonElement>("#rover-clear")!.onclick = () => {
+  clearQueue();
 };
 document.querySelector<HTMLButtonElement>("#rover-reset")!.onclick = () => {
   x.num = 2;
   y.num = 2;
   direction = 0;
+  clearQueue();
   drawRover();
 };
 drawRover();
